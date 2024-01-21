@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(uuid())
+  name String @db.VarChar(90)
+  email String @unique
+  password String
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt
+}
+
+model Tasks {
+  id Int @id @default(autoincrement())
+  title String @db.VarChar(150)
+  content String @db.MediumText
+  isCompleted Boolean
+  userId String
+  createdAt DateTime @default(now()) @map("createdAt")
+  updatedAt DateTime @updatedAt
+}
+
