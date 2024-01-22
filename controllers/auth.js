@@ -79,7 +79,7 @@ export const signin = async (req, res) => {
             return res.status(401).json({
                 type:'failed',
                 auth:'false',
-                message:"Aww! Email or password doesn't matched."
+                message:"Email or password doesn't matched."
             });
         }
 
@@ -89,7 +89,7 @@ export const signin = async (req, res) => {
             return res.status(401).json({
                 type:'failed',
                 auth:'false',
-                message:"Aww! Email or password doesn't matched."
+                message:"Email or password doesn't matched."
             });
         }
 
