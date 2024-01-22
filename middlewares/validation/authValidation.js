@@ -7,7 +7,7 @@ function filterHtmlTags(input) {
 }
 
 export const validateUserCredentialsRegister = (req, res, next) => {
-    if (!req.body.name && !req.body.email && !req.body.password && !req.body.passwordConfirm)
+    if (!req.body.name || !req.body.email || !req.body.password || !req.body.passwordConfirm)
     {
         return res.status(401).json({type:'failed', element:"all", message:'Please provide all required fields.'});
     }

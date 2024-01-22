@@ -12,6 +12,7 @@ model User {
   name String @db.VarChar(90)
   email String @unique
   password String
+  verifiedAt DateTime?
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt
 }
