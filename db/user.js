@@ -40,3 +40,24 @@ export const getUserByEmail = async (email) => {
     }
 }
 
+
+export const updateUserPassword = async (id, password) => {
+    try
+    {
+        const updatedUser = await prisma.user.update({
+            where:{id:id},
+            data:{
+                password:password
+            }
+        });
+        return updatedUser;
+    }
+    catch(err)
+    {
+        console.log(err);
+    }
+    finally
+    {
+        prisma.$disconnect;
+    }
+}

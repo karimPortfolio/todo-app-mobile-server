@@ -1,7 +1,8 @@
 import { compare, hash } from "bcrypt";
 import { prisma } from "../config/prisma.js"
 import { createToken } from "../utils/jwt/jwt.js";
-import { createUser, getUserByEmail } from "../db/user.js";
+import { createUser, getUserByEmail, updateUserPassword } from "../db/user.js";
+import { sendForgetPasswordMail } from "../mails/forgetPassword/forgetPassword.js";
 
 
 export const signup = async (req, res) => {
@@ -122,5 +123,80 @@ export const signin = async (req, res) => {
         console.log(err);
     }
 
+}
+
+
+export const forgetPassword = async (req, res) => {
+    const email = req.body.email;
+    try
+    {
+        if (!email)
+        {
+            return res.status(400).json({
+                type:'failed',
+                message:'Please enter your email.'
+            });
+        }
+        const user = await getUserByEmail(email);
+        if (!user)
+        {
+            return res.status(400).json({
+                type:'failed',
+                message:"Email doesn't matched."
+            });
+        }
+        const mail = await sendForgetPasswordMail(user.name, user.email);
+        if (!mail || !mail.messageId)
+        {
+            return res.status(500).json({
+                type:'failed',
+                message:"Something went wrong. Try again later"
+            });
+        }
+        console.log(mail);
+        return res.status(200).json({
+            type:'success',
+            message:'Reset password link has been sent to your email'
+        })
+    }
+    catch (err)
+    {
+        console.log(err);
+    }
+}
+
+export const resetPassword = async (req, res) => {
+
+    const {password} = req.body;
+    const id = req.params.id;
+
+    try
+    {
+        const hashedPassword = await hash(password, 10);
+        if (!hashedPassword)
+        {
+            return res.status(500).json({
+                type:'failed',
+                message:"Something went wrong."
+            });
+        }
+        const updatedUser = await updateUserPassword(id, hashedPassword);
+        if (!updatedUser)
+        {
+            return res.status(500).json({
+                type:'failed',
+                message:"Failed to reset password, Try again later."
+            });
+        }
+
+        return res.status(200).json({
+            type:'success',
+            message:"Password changed with success."
+        });
+    }
+    catch(err)
+    {
+        console.log(err);
+    }
 }
 

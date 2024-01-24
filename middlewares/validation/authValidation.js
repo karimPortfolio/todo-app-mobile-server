@@ -103,3 +103,57 @@ export const validateUserCredentialsLogin = (req, res, next) => {
     next()
 }
 
+
+export const validateUserCredentialsResetPassword = (req, res, next) => {
+
+    if (!req.body.password || !req.body.passwordConfirm)
+    {
+        return res.status(401).json({type:'failed', element:"all", message:'Please provide all required fields.'});
+    }
+
+    if (typeof req.body.password !== 'string' || typeof req.body.password !== 'string') 
+    {
+        return res.status(400).json({type:'failed', message:'Invalid password.'});
+    } 
+
+    try
+    {
+        const password = filterHtmlTags(req.body.password);
+        const passwordConfirm = filterHtmlTags(req.body.passwordConfirm);
+
+        //Password Strength Validation
+        if (!validator.isStrongPassword(password, { 
+            minLength: 8,
+            minLowercase: 1,
+            minUppercase: 1,
+            minNumbers: 1,
+            minSymbols: 1 
+        })) {
+            return res.status(400).json({
+                type: 'failed',
+                element:"password",
+                message: 'Password must be at least 8 characters long and include uppercase letters, lowercase letters, numbers, and special characters.',
+            });
+        }
+        
+        //check if password's not matched
+        if (passwordConfirm !== password)
+        {
+            return res.status(400).json({
+                type: 'failed',
+                element:"passwordConfirm",
+                message: "Password's doesn't matched." ,
+            });
+        }
+
+        req.body = {
+            password,
+        }
+
+        next();
+    }
+    catch (err)
+    {
+        console.log(err);
+    }
+}
