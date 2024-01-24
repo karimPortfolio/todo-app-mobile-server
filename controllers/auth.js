@@ -153,7 +153,7 @@ export const forgetPassword = async (req, res) => {
                 message:"Something went wrong. Try again later"
             });
         }
-        console.log(mail);
+
         return res.status(200).json({
             type:'success',
             message:'Reset password link has been sent to your email'

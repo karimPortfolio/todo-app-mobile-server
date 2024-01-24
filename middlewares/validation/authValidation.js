@@ -111,7 +111,7 @@ export const validateUserCredentialsResetPassword = (req, res, next) => {
         return res.status(401).json({type:'failed', element:"all", message:'Please provide all required fields.'});
     }
 
-    if (typeof req.body.password !== 'string' || typeof req.body.password !== 'string') 
+    if (typeof req.body.password !== 'string' || typeof req.body.passwordConfirm !== 'string') 
     {
         return res.status(400).json({type:'failed', message:'Invalid password.'});
     } 
