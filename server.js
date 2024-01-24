@@ -32,10 +32,6 @@ app.set('trust proxy',1)
 app.use('/api/auth', AuthRoute);
 app.use('/api/tasks', TasksRoute);
 
-app.get('/', (req, res) => {
-    const ip = req.ip;
-    console.log(ip);
-})
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -118,6 +118,7 @@ export const validateUserCredentialsResetPassword = (req, res, next) => {
 
     try
     {
+        //remove html tags from the request body values
         const password = filterHtmlTags(req.body.password);
         const passwordConfirm = filterHtmlTags(req.body.passwordConfirm);
 
