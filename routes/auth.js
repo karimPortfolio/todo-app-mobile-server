@@ -13,9 +13,10 @@ import {
 
 export const Route = Router();
 
+
 Route.post('/signup', validateUserCredentialsRegister, signup);
 Route.post('/signin', validateUserCredentialsLogin, signin);
 Route.post('/forget-password', forgetPassword);
-Route.post('/:id/reset-password', validateUserCredentialsResetPassword, resetPassword);
+Route.post('/reset-password', validateUserCredentialsResetPassword, resetPassword);
 
 

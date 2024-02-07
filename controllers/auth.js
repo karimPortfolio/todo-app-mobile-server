@@ -3,7 +3,8 @@ import { prisma } from "../config/prisma.js"
 import { createToken } from "../utils/jwt/jwt.js";
 import { createUser, getUserByEmail, updateUserPassword } from "../db/user.js";
 import { sendForgetPasswordMail } from "../mails/forgetPassword/forgetPassword.js";
-
+import { generatePasswordResetToken } from "../utils/generateCustomToken.js";
+import { deleteToken, getToken, storeToken } from '../db/token.js';
 
 export const signup = async (req, res) => {
     try
@@ -137,6 +138,8 @@ export const forgetPassword = async (req, res) => {
                 message:'Please enter your email.'
             });
         }
+
+        //check if the email provided is exist in the user table
         const user = await getUserByEmail(email);
         if (!user)
         {
@@ -145,7 +148,21 @@ export const forgetPassword = async (req, res) => {
                 message:"Email doesn't matched."
             });
         }
-        const mail = await sendForgetPasswordMail(user.name, user.email);
+
+        //generate token and store it in database along with a expires time and user id
+        const new_token = generatePasswordResetToken();
+        const expiresTime =  Date.now() + 3600000; //1h
+        const token = await storeToken(new_token, user.id, expiresTime);
+        if (!token || !token.token || !token.expiration_time)
+        {
+            return res.status(500).json({
+                type:'failed',
+                message:"Something went wrong. Try again later"
+            });
+        }
+
+        //send mail to user email with a reset password link contain token, user id, expires time
+        const mail = await sendForgetPasswordMail(user.id, user.name, user.email, token.token, token.expiration_time);
         if (!mail || !mail.messageId)
         {
             return res.status(500).json({
@@ -167,11 +184,25 @@ export const forgetPassword = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
 
-    const {password} = req.body;
-    const id = req.params.id;
+    const {password, token} = req.body;
 
     try
     {
+        const result = await getToken(token);
+        if (!result)
+        {
+            return res.status(400).json({
+                type:'failed',
+                message:"Invalid token."
+            });
+        }
+        if (result.expiration_time < Date.now()) {
+            return res.status(400).json({
+                type:'failed',
+                message:"Request has expired, Try again."
+            });
+        }
+
         const hashedPassword = await hash(password, 10);
         if (!hashedPassword)
         {
@@ -180,7 +211,8 @@ export const resetPassword = async (req, res) => {
                 message:"Something went wrong."
             });
         }
-        const updatedUser = await updateUserPassword(id, hashedPassword);
+
+        const updatedUser = await updateUserPassword(result.userId, hashedPassword);
         if (!updatedUser)
         {
             return res.status(500).json({
@@ -188,6 +220,8 @@ export const resetPassword = async (req, res) => {
                 message:"Failed to reset password, Try again later."
             });
         }
+
+        await deleteToken(result.id);
 
         return res.status(200).json({
             type:'success',
@@ -200,3 +234,24 @@ export const resetPassword = async (req, res) => {
     }
 }
 
+export const renderResetPasswordView = (req, res) => {
+    const {token, user} = req.query;
+
+    try
+    {
+        if (!token, !user)
+        {
+            return res.sendStatus(401);
+        }
+
+        return res.render('resetPassword', {
+            token,
+            user,
+            csrfToken:req.csrfToken()
+        });
+    }
+    catch(err)
+    {
+        console.log(err);
+    }
+} 

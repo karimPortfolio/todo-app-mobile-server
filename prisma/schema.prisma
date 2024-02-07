@@ -13,6 +13,7 @@ model User {
   email String @unique
   password String
   verifiedAt DateTime?
+  Password_reset_tokens Password_reset_tokens[]
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt
 }
@@ -27,3 +28,10 @@ model Tasks {
   updatedAt DateTime @updatedAt
 }
 
+model Password_reset_tokens {
+  id Int @id @default(autoincrement())
+  userId String
+  user     User    @relation(fields: [userId], references: [id])
+  token String
+  expiration_time BigInt
+}

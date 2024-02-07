@@ -106,7 +106,7 @@ export const validateUserCredentialsLogin = (req, res, next) => {
 
 export const validateUserCredentialsResetPassword = (req, res, next) => {
 
-    if (!req.body.password || !req.body.passwordConfirm)
+    if (!req.body.password || !req.body.passwordConfirm || !req.body.token)
     {
         return res.status(401).json({type:'failed', element:"all", message:'Please provide all required fields.'});
     }
@@ -121,6 +121,7 @@ export const validateUserCredentialsResetPassword = (req, res, next) => {
         //remove html tags from the request body values
         const password = filterHtmlTags(req.body.password);
         const passwordConfirm = filterHtmlTags(req.body.passwordConfirm);
+        const token = filterHtmlTags(req.body.token);
 
         //Password Strength Validation
         if (!validator.isStrongPassword(password, { 
@@ -149,6 +150,7 @@ export const validateUserCredentialsResetPassword = (req, res, next) => {
 
         req.body = {
             password,
+            token
         }
 
         next();
